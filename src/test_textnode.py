@@ -1,8 +1,8 @@
 import unittest
 
-from textnode import (TextNode, split_nodes_delimiter, TEXT_TYPE_TEXT,
-                      TEXT_TYPE_BOLD, TEXT_TYPE_ITALIC, TEXT_TYPE_CODE,
-                      TEXT_TYPE_LINK, TEXT_TYPE_IMAGE)
+from textnode import (TextNode, split_nodes_delimiter, split_nodes_image,
+                      TEXT_TYPE_TEXT, TEXT_TYPE_BOLD, TEXT_TYPE_ITALIC,
+                      TEXT_TYPE_CODE, TEXT_TYPE_LINK, TEXT_TYPE_IMAGE)
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -62,6 +62,35 @@ class TestTextNode(unittest.TestCase):
                 TextNode("bold text", TEXT_TYPE_BOLD)
                 ]
         self.assertEqual(new_nodes, expected)
+
+    def test_split_nodes_image(self):
+        node = TextNode(
+                "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+                TEXT_TYPE_TEXT,
+                )
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(new_nodes,
+                         [
+                             TextNode("This is text with an ", TEXT_TYPE_TEXT),
+                             TextNode("image", TEXT_TYPE_IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                             TextNode(" and another ", TEXT_TYPE_TEXT),
+                             TextNode(
+                                 "second image", TEXT_TYPE_IMAGE, "https://i.imgur.com/3elNhQu.png"
+                                 ),
+                             ]
+                         )
+
+    def test_split_nodes_image2(self):
+        node = TextNode("", TEXT_TYPE_TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(new_nodes, [])
+
+    def test_split_nodes_image3(self):
+        node = TextNode("just text", TEXT_TYPE_TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(new_nodes, [
+            node
+            ])
 
 
 if __name__ == "__main__":

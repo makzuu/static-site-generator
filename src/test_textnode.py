@@ -1,8 +1,9 @@
 import unittest
 
 from textnode import (TextNode, split_nodes_delimiter, split_nodes_image,
-                      TEXT_TYPE_TEXT, TEXT_TYPE_BOLD, TEXT_TYPE_ITALIC,
-                      TEXT_TYPE_CODE, TEXT_TYPE_LINK, TEXT_TYPE_IMAGE)
+                      split_nodes_link, TEXT_TYPE_TEXT, TEXT_TYPE_BOLD,
+                      TEXT_TYPE_ITALIC, TEXT_TYPE_CODE, TEXT_TYPE_LINK,
+                      TEXT_TYPE_IMAGE)
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -92,6 +93,34 @@ class TestTextNode(unittest.TestCase):
             node
             ])
 
+    def test_split_nodes_link(self):
+        node = TextNode(
+                "This is text with a [link](https://www.boot.dev) and another [second link](https://archlinux.org)",
+                TEXT_TYPE_TEXT,
+                )
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(new_nodes,
+                         [
+                             TextNode("This is text with a ", TEXT_TYPE_TEXT),
+                             TextNode("link", TEXT_TYPE_LINK, "https://www.boot.dev"),
+                             TextNode(" and another ", TEXT_TYPE_TEXT),
+                             TextNode(
+                                 "second link", TEXT_TYPE_LINK, "https://archlinux.org"
+                                 ),
+                             ]
+                         )
+
+    def test_split_nodes_link2(self):
+        node = TextNode("", TEXT_TYPE_TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(new_nodes, [])
+
+    def test_split_nodes_link3(self):
+        node = TextNode("just text", TEXT_TYPE_TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(new_nodes, [
+            node
+            ])
 
 if __name__ == "__main__":
     unittest.main()

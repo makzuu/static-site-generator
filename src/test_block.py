@@ -22,5 +22,9 @@ This is the same paragraph on a new line
         markdown = ""
         self.assertEqual(markdown_to_blocks(markdown), [])
 
+    def test_markdown_to_blocks3(self):
+        markdown = "\n## Heading     "
+        self.assertEqual(markdown_to_blocks(markdown), ["## Heading"])
+
 if __name__ == "__main__":
     unittest.main()

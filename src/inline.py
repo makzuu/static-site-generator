@@ -1,4 +1,5 @@
 from textnode import TextNode
+from htmlnode import LeafNode
 import re
 
 TEXT_TYPE_TEXT = "text"
@@ -9,17 +10,17 @@ TEXT_TYPE_LINK = "link"
 TEXT_TYPE_IMAGE = "image"
 
 def text_node_to_html_node(text_node):
-    if text_type == "text":
+    if text_node.text_type == "text":
         return LeafNode(None, text_node.text)
-    if text_type == "bold":
+    if text_node.text_type == "bold":
         return LeafNode("b", text_node.text)
-    if text_type == "italic":
+    if text_node.text_type == "italic":
         return LeafNode("i", text_node.text)
-    if text_type == "code":
+    if text_node.text_type == "code":
         return LeafNode("code", text_node.text)
-    if text_type == "link":
+    if text_node.text_type == "link":
         return LeafNode("a", text_node.text, {"href": text_node.url})
-    if text_type == "image":
+    if text_node.text_type == "image":
         return LeafNode("img", "", {"src": text_node.url, "alt": text_node.text})
     raise ValueError("Invalid text_type")
 

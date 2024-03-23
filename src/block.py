@@ -1,3 +1,6 @@
+from htmlnode import HTMLNode, ParentNode, LeafNode
+from inline import text_to_textnodes, text_node_to_html_node
+
 BLOCK_TYPE_PARAGRAPH = "paragraph"
 BLOCK_TYPE_HEADING = "heading"
 BLOCK_TYPE_CODE = "code"
@@ -47,3 +50,82 @@ def block_to_block_type(block):
     if start != None and start[:-1].isdigit() and start[-1] == ".":
         return BLOCK_TYPE_ORDERED_LIST
     return BLOCK_TYPE_PARAGRAPH
+
+def paragraph_block_to_htmlnode(block):
+    text = " ".join(block.split("\n"))
+    text_nodes = text_to_textnodes(text)
+    html_nodes = []
+    for text_node in text_nodes:
+        html_node = text_node_to_html_node(text_node)
+        html_nodes.append(html_node)
+    return ParentNode("p", html_nodes)
+
+def heading_block_to_htmlnode(block):
+    sections = block.split(" ")
+    text = " ".join(sections[1:])
+    heading_lv = sections[0].count("#")
+
+    html_nodes = []
+    text_nodes = text_to_textnodes(text)
+    for text_node in text_nodes:
+        html_node = text_node_to_html_node(text_node)
+        html_nodes.append(html_node)
+    return ParentNode(f"h{heading_lv}", html_nodes)
+
+def code_block_to_htmlnode(block):
+    value = block[4:len(block) - 4]
+    return ParentNode("pre", [ParentNode("code", [LeafNode(None, value)])])
+
+def quote_block_to_htmlnode(block):
+    lines = block.split("\n")
+    text = " ".join(map(lambda line: line.strip("> "), lines))
+    text_nodes = text_to_textnodes(text)
+    html_nodes = []
+    for text_node in text_nodes:
+        html_node = text_node_to_html_node(text_node)
+        html_nodes.append(html_node)
+    return ParentNode("blockquote", html_nodes)
+
+def unordered_list_block_to_htmlnode(block):
+    lines = block.split("\n")
+    li_children = []
+    children = []
+    for line in lines:
+        text_nodes = text_to_textnodes(line[2:])
+        for text_node in text_nodes:
+            li_children.append(text_node_to_html_node(text_node))
+        children.append(ParentNode("li", li_children))
+        li_children = []
+    return ParentNode("ul", children)
+
+def ordered_list_block_to_htmlnode(block):
+    lines = block.split("\n")
+    li_children = []
+    children = []
+    for line in lines:
+        line = " ".join(line.split()[1:])
+        text_nodes = text_to_textnodes(line)
+        for text_node in text_nodes:
+            li_children.append(text_node_to_html_node(text_node))
+        children.append(ParentNode("li", li_children))
+        li_children = []
+    return ParentNode("ol", children)
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    nodes = []
+    for block in blocks:
+        type = block_to_block_type(block)
+        if type is BLOCK_TYPE_PARAGRAPH:
+            nodes.append(paragraph_block_to_htmlnode(block))
+        if type is BLOCK_TYPE_HEADING:
+            nodes.append(heading_block_to_htmlnode(block))
+        if type is BLOCK_TYPE_CODE:
+            nodes.append(code_block_to_htmlnode(block))
+        if type is BLOCK_TYPE_QUOTE:
+            nodes.append(quote_block_to_htmlnode(block))
+        if type is BLOCK_TYPE_UNORDERED_LIST:
+            nodes.append(unordered_list_block_to_htmlnode(block))
+        if type is BLOCK_TYPE_ORDERED_LIST:
+            nodes.append(ordered_list_block_to_htmlnode(block))
+    return ParentNode("div", nodes)
